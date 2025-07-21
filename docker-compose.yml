@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: pickup-postgres
+    environment:
+      POSTGRES_DB: pickup_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pickup-network
+
+  pickup-srv:
+    build: .
+    container_name: pickup-srv
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: pickup_db
+      DB_SSLMODE: disable
+      GRPC_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - pickup-network
+
+volumes:
+  postgres_data:
+
+networks:
+  pickup-network:
+    driver: bridge
