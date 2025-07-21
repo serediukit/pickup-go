@@ -27,11 +27,11 @@ func (s *PickupService) GetUsers(ctx context.Context, req *proto.GetUsersRequest
 	protoUsers := make([]*proto.User, len(users))
 	for i, user := range users {
 		protoUsers[i] = &proto.User{
-			Id:    int32(user.ID),
+			Id:    user.Id,
 			Name:  user.Name,
-			Age:   int32(user.Age),
+			Age:   user.Age,
 			City:  user.City,
-			RegDt: user.RegDt.Format("2006-01-02T15:04:05Z"),
+			RegDt: user.RegDt,
 		}
 	}
 
