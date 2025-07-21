@@ -15,7 +15,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) GetUsers(params *proto.UserSearchParams, limit int32) ([]*models.User, error) {
+func (r *UserRepository) GetUsers(params *proto.UserSearchParams, limit int32) ([]*proto.User, error) {
 	query := `
 SELECT id, name, age, city, reg_dt 
 FROM users 
@@ -47,10 +47,10 @@ LIMIT $10`
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*proto.User
 	for rows.Next() {
-		user := &models.User{}
-		err := rows.Scan(&user.ID, &user.Name, &user.Age, &user.City, &user.RegDt)
+		user := &proto.User{}
+		err := rows.Scan(&user.Id, &user.Name, &user.Age, &user.City, &user.RegDt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
@@ -62,4 +62,17 @@ LIMIT $10`
 	}
 
 	return users, nil
+}
+
+func (r *UserRepository) CreateUser(user *models.UserRegistrationEvent) error {
+	query := `
+INSERT INTO users (name, age, city, gender, search_gender, search_age_from, search_age_to, location) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+
+	_, err := r.db.Exec(query, user.Name, user.Age, user.City, user.Gender, user.SearchGender, user.SearchAgeFrom, user.SearchAgeTo, user.Location)
+	if err != nil {
+		return fmt.Errorf("failed to create user: %w", err)
+	}
+
+	return nil
 }
