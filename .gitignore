@@ -38,3 +38,4 @@ go.work.sum
 /.idea/.gitignore
 /.idea/pickup-go.iml
 /.idea/vcs.xml
+/.idea/dictionaries/project.xml

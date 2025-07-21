@@ -1,4 +1,4 @@
-.PHONY: proto build run docker-build docker-up docker-down
+.PHONY: proto build run docker-build docker-up docker-down build-grpc-client build-user-registered-produced
 
 proto:
 	protoc --go_out=. --go_opt=paths=source_relative \
@@ -20,6 +20,14 @@ docker-up:
 docker-down:
 	docker-compose down
 
-grpc-client:
+build-grpc-client:
 	go build -o bin/grpc_client ./cmd/client/grpc_client.go
 	./bin/grpc_client
+
+build-user-registered-produced:
+	go build -o bin/user_reg_producer ./test/test_producer_user_registered.go
+	./bin/user_reg_producer
+
+build-all:
+	make docker-up
+	make build-user-registered-produced
