@@ -60,4 +60,26 @@ func main() {
 	for _, user := range resp.Users {
 		log.Printf("User: %s - Age: %d, City: %s", user.Name, user.Age, user.City)
 	}
+
+	log.Println("=== Getting all users with limit 100 ===")
+	resp, err = client.GetUsers(context.Background(), &proto.GetUsersRequest{
+		UserSearchParams: &proto.UserSearchParams{
+			Id:            109,
+			Gender:        "f",
+			SearchGender:  "m",
+			Age:           20,
+			SearchAgeFrom: 18,
+			SearchAgeTo:   40,
+			Location:      32,
+		},
+		Limit: 10,
+	})
+	if err != nil {
+		log.Fatalf("GetUsers failed: %v", err)
+	}
+
+	log.Printf("Found %d users", resp.Total)
+	for _, user := range resp.Users {
+		log.Printf("User: %s - Age: %d, City: %s", user.Name, user.Age, user.City)
+	}
 }
