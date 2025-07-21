@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package pickup;
+
+option go_package = "./proto";
+
+service PickupService {
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
+}
+
+message GetUsersRequest {
+  UserSearchParams user_search_params = 1;
+  int32 limit = 2;
+}
+
+message UserSearchParams {
+  uint32 id = 1;
+  string gender = 2;
+  string search_gender = 3;
+  uint32 age = 4;
+  uint32 search_age_from = 5;
+  uint32 search_age_to = 6;
+  float location = 7;
+}
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  int32 age = 3;
+  string city = 4;
+  string reg_dt = 5;
+}
+
+message GetUsersResponse {
+  repeated User users = 1;
+  int32 total = 2;
+}
