@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users
     search_gender   VARCHAR(1)   NOT NULL,
     search_age_from INTEGER      NOT NULL CHECK (search_age_from > 0),
     search_age_to   INTEGER      NOT NULL CHECK (search_age_to > search_age_from),
-    location        FLOAT
+    location        FLOAT        NOT NULL
 );
 
 -- Insert sample data
