@@ -1,21 +1,35 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"strconv"
+	"time"
+
+	"pickup-srv/internal/cache"
 	"pickup-srv/internal/models"
 	"pickup-srv/proto"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db    *sql.DB
+	cache cache.Cacher
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewUserRepository(db *sql.DB, cacheClient cache.Cacher) *UserRepository {
+	return &UserRepository{db: db, cache: cacheClient}
 }
 
 func (r *UserRepository) GetUsers(params *proto.UserSearchParams, limit int32) ([]*proto.User, error) {
+	cacheKey := strconv.Itoa(int(params.Id))
+	lastQueryResult, err := r.cache.Get(context.Background(), cacheKey)
+	if err != nil {
+		log.Printf("No cache exists for user %d\n", params.Id)
+	}
+	log.Printf("Last query length for user %d - %s\n", params.Id, lastQueryResult)
+
 	query := `
 SELECT id, name, age, city, reg_dt 
 FROM users 
@@ -60,6 +74,9 @@ LIMIT $10`
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating over rows: %w", err)
 	}
+
+	err = r.cache.Set(context.Background(), cacheKey, len(users), 6*time.Hour)
+	log.Printf("Set last query length for user %d - %d\n", params.Id, len(users))
 
 	return users, nil
 }

@@ -6,13 +6,15 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"syscall"
+
+	"pickup-srv/internal/cache"
 	"pickup-srv/internal/consumer"
 	"pickup-srv/internal/database"
 	"pickup-srv/internal/messaging"
 	"pickup-srv/internal/repository"
 	"pickup-srv/internal/service"
 	"pickup-srv/proto"
-	"syscall"
 
 	"google.golang.org/grpc"
 )
@@ -27,7 +29,8 @@ func main() {
 	}
 	defer db.Close()
 
-	userRepo := repository.NewUserRepository(db)
+	redis := cache.NewRedisClient()
+	userRepo := repository.NewUserRepository(db, redis)
 
 	rabbitmq, err := messaging.NewRabbitMQ()
 	if err != nil {
