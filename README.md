@@ -12,7 +12,6 @@ A gRPC service for picking up users from PostgreSQL database.
 - Sample data initialization
 - Event-driven user creation
 
-
 ## Prerequisites
 
 - Go 1.24+
@@ -22,17 +21,20 @@ A gRPC service for picking up users from PostgreSQL database.
 ## Quick Start
 
 1. **Clone and setup the project:**
+
 ```bash
 git clone <repository-url>
 cd pickup-srv
 ```
 
 2. **Start the service with Docker Compose:**
+
 ```bash 
 make docker-up
 ```
 
 This will:
+
 - Start PostgreSQL database with sample data
 - Start RabbitMQ with management interface
 - Build and start the pickup-srv gRPC service with event consumer
@@ -40,6 +42,7 @@ This will:
 - Expose RabbitMQ management UI on port 15672
 
 3. **Test the service:**
+
 ```bash 
 # Generate protobuf files (if not using Docker)
 make proto
@@ -52,14 +55,17 @@ make build-user-registered-produced
 ## Services
 
 ### gRPC Service
+
 The service provides one gRPC method:
 
 #### GetUsers
+
 ```
 protobuf rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
 ```
 
 **Request:**
+
 - `user_params`: Optional filtering parameters
     - `name`: Filter by name (case-insensitive partial match)
     - `email`: Filter by email (case-insensitive partial match)
@@ -68,15 +74,27 @@ protobuf rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
 - `limit`: Maximum number of users to return
 
 **Response:**
+
 - `users`: Array of user objects
 - `total`: Total number of users matching the filter
 
 ### RabbitMQ Consumer
+
 The service listens to RabbitMQ queue `user.registration` for user registration events.
 
 #### Event Format
-```
-json { "name": "John Doe", "age": 30, "city": "New York", "gender": "m", "search_gender": "f", "search_age_from": 20, "search_age_to": 25, "location": 19 }
+
+```json
+{
+  "name": "John Doe",
+  "age": 30,
+  "city": "New York",
+  "gender": "m",
+  "search_gender": "f",
+  "search_age_from": 20,
+  "search_age_to": 25,
+  "location": 19
+}
 ```
 
 ## Management Interfaces
@@ -89,26 +107,32 @@ json { "name": "John Doe", "age": 30, "city": "New York", "gender": "m", "search
 ### Local Development
 
 1. **Start infrastructure:**
+
 ```bash
 # Start PostgreSQL and RabbitMQ
 docker-compose up postgres rabbitmq -d
 ```
+
 2. **Initialize database:**
+
 ```
 bash psql -h localhost -U postgres -d pickup_db -f init.sql
 ``` 
 
 3. **Generate protobuf files:**
+
 ```
 bash make proto
 ``` 
 
 4. **Run the service:**
+
 ```
 bash make run
 ``` 
 
 5. **Test RabbitMQ events:**
+
 ```
 bash make build-user-registered-produced
 ``` 
@@ -116,6 +140,7 @@ bash make build-user-registered-produced
 ### Environment Variables
 
 #### Database
+
 - `DB_HOST`: Database host (default: localhost)
 - `DB_PORT`: Database port (default: 5432)
 - `DB_USER`: Database user (default: postgres)
@@ -124,12 +149,14 @@ bash make build-user-registered-produced
 - `DB_SSLMODE`: SSL mode (default: disable)
 
 #### RabbitMQ
+
 - `RABBITMQ_HOST`: RabbitMQ host (default: localhost)
 - `RABBITMQ_PORT`: RabbitMQ port (default: 5672)
 - `RABBITMQ_USER`: RabbitMQ user (default: guest)
 - `RABBITMQ_PASSWORD`: RabbitMQ password (default: guest)
 
 #### Service
+
 - `GRPC_PORT`: gRPC service port (default: 8080)
 
 ### Make Commands
@@ -143,25 +170,55 @@ bash make build-user-registered-produced
 - `make docker-down`: Stop Docker Compose services
 
 ## Database Schema
+
 ```sql 
 CREATE TABLE IF NOT EXISTS users
 (
-    id              SERIAL       PRIMARY KEY,
-    name            VARCHAR(255) NOT NULL,
-    age             INTEGER      NOT NULL CHECK (age > 0),
-    city            VARCHAR(255) NOT NULL,
-    reg_dt          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    gender          VARCHAR(1)   NOT NULL,
-    search_gender   VARCHAR(1)   NOT NULL,
-    search_age_from INTEGER      NOT NULL CHECK (search_age_from > 0),
-    search_age_to   INTEGER      NOT NULL CHECK (search_age_to > search_age_from),
-    location        FLOAT        NOT NULL
-)
+    id
+    SERIAL
+    PRIMARY
+    KEY,
+    name
+    VARCHAR
+(
+    255
+) NOT NULL,
+    age INTEGER NOT NULL CHECK
+(
+    age >
+    0
+),
+    city VARCHAR
+(
+    255
+) NOT NULL,
+    reg_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    gender VARCHAR
+(
+    1
+) NOT NULL,
+    search_gender VARCHAR
+(
+    1
+) NOT NULL,
+    search_age_from INTEGER NOT NULL CHECK
+(
+    search_age_from >
+    0
+),
+    search_age_to INTEGER NOT NULL CHECK
+(
+    search_age_to >
+    search_age_from
+),
+    location FLOAT NOT NULL
+    )
 ``` 
 
 ## Message Queue
 
-The service consumes messages from the `user.registration` queue. Each message should contain user registration data in JSON format. The consumer will:
+The service consumes messages from the `user.registration` queue. Each message should contain user registration data in
+JSON format. The consumer will:
 
 1. Validate the event data
 2. Insert the new user into the PostgreSQL database
@@ -171,49 +228,56 @@ The service consumes messages from the `user.registration` queue. Each message s
 ## Testing
 
 1. **Start the services:**
+
 ```bash
 make docker-up
 ```
 
 1. **Test gRPC API:**
+
 ``` bash
 go run ./cmd/client
 ```
+
 2. **Send registration events:**
+
 ``` bash
 make publisher
 ```
+
 3. **Verify new users were created:**
+
 ``` bash
 go run ./cmd/client
 ```
-The publisher will send sample user registration events to RabbitMQ, which will be processed by the consumer and stored in the database.
 
+The publisher will send sample user registration events to RabbitMQ, which will be processed by the consumer and stored
+in the database.
 
 Perfect! Now you have a complete pickup-srv service with RabbitMQ event processing. Here's what I've added:
 
 ## New Components:
 
 1. **RabbitMQ Integration** (`internal/messaging/rabbitmq.go`):
-   - Connection handling with retry logic
-   - Queue declaration and message consumption
+    - Connection handling with retry logic
+    - Queue declaration and message consumption
 
 2. **Event Consumer** (`internal/consumer/user_consumer.go`):
-   - Listens to `user.registration` queue
-   - Validates incoming user registration events
-   - Creates users in the database
-   - Handles message acknowledgment/rejection
+    - Listens to `user.registration` queue
+    - Validates incoming user registration events
+    - Creates users in the database
+    - Handles message acknowledgment/rejection
 
 3. **Updated Models**:
-   - Added `UserRegistrationEvent` for RabbitMQ events
-   - Updated `User` model to match your schema (with `reg_dt`)
+    - Added `UserRegistrationEvent` for RabbitMQ events
+    - Updated `User` model to match your schema (with `reg_dt`)
 
 4. **Enhanced Repository**:
-   - Added `CreateUser` method for event-driven user creation
+    - Added `CreateUser` method for event-driven user creation
 
 5. **Test Producer** (`test/test_producer_user_registered.go`):
-   - Simulates user registration events
-   - Helps test the RabbitMQ integration
+    - Simulates user registration events
+    - Helps test the RabbitMQ integration
 
 ## Key Features:
 
@@ -226,9 +290,10 @@ Perfect! Now you have a complete pickup-srv service with RabbitMQ event processi
 ## To test the new functionality:
 
 1. **Start services**: `make docker-up`
-2. **Send test events**: `make build-user-registered-produced` 
+2. **Send test events**: `make build-user-registered-produced`
 3. **Query users**: `make build-grpc-client`
 4. **Monitor RabbitMQ**: Visit http://localhost:15672 (guest/guest)
 
 The service now handles both gRPC requests for user retrieval and RabbitMQ events for user registration!
+
 ```
