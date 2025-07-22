@@ -25,14 +25,16 @@ func NewRabbitMQ() (*RabbitMQ, error) {
 	var conn *amqp.Connection
 	var err error
 
-	for i := 0; i < 5; i++ {
+	retriesCount := 10
+
+	for i := 0; i < retriesCount; i++ {
 		conn, err = amqp.Dial(url)
 		if err == nil {
 			break
 		}
 
-		fmt.Printf("Failed to connect to RabbitMQ (attempt %d/5): %v\n", i+1, err)
-		time.Sleep(time.Duration(i+1) * 2 * time.Second)
+		fmt.Printf("Failed to connect to RabbitMQ (attempt %d/%d): %v\n", i+1, retriesCount, err)
+		time.Sleep(time.Duration(i+1) * 3 * time.Second)
 	}
 
 	if err != nil {

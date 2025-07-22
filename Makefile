@@ -14,6 +14,9 @@ run:
 docker-build:
 	docker build -t pickup-srv .
 
+docker-rebuild:
+	docker-compose up --build --no-deps pickup-srv -d
+
 docker-up:
 	docker-compose up --build -d
 

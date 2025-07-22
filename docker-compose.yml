@@ -30,6 +30,15 @@ services:
     networks:
       - pickup-network
 
+  redis:
+    image: redis:latest
+    container_name: pickup-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pickup-network
 
   pickup-srv:
     build: .
@@ -45,18 +54,22 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       GRPC_PORT: 8080
     ports:
       - "8080:8080"
     depends_on:
       - postgres
       - rabbitmq
+      - redis
     networks:
       - pickup-network
 
 volumes:
   postgres_data:
   rabbitmq_data:
+  redis_data:
 
 networks:
   pickup-network:
